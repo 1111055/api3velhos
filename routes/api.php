@@ -20,6 +20,7 @@ use App\Http\Controllers\ClassificacoesController;
 Route::post('/register', [AuthController::class,'register']);
 Route::post('/login', [AuthController::class,'login']);
 Route::get('/classificacao/getall', [ClassificacoesController::class,'getall']); 
+Route::get('/articles', [ArticleController::class,'index']);
 
 Route::group(['middleware' => ['auth:sanctum']], function(){
 
@@ -31,7 +32,7 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
 
 
     //Lista de Artigos
-    Route::get('/articles', [ArticleController::class,'index']);
+    //Route::get('/articles', [ArticleController::class,'index']);
     Route::get('articles/{id}', 'ArticleController@show');
     Route::post('articles', 'ArticleController@store');
     Route::delete('articles/{id}', 'ArticleController@destroy');

@@ -32,6 +32,18 @@ class ArticleController extends Controller
 
     }
 
+    public function getArticles()
+    {
+        
+       
+      $teste2tmp = Article::where('title','!=',' ')->where('activo','=','1')->orderBy('created_at','desc')->paginate(5);
+
+
+       return response()->json($teste2tmp);
+
+
+    }
+
     /**
      * Show the form for creating a new resource.
      *

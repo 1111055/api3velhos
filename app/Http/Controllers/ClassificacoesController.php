@@ -39,9 +39,9 @@ class ClassificacoesController extends Controller
        
        $now = Carbon::now();
      
-       $mes = 7;
+       $mes = 8;
 
-       $ano = $now->year;
+       $ano = 2021;
 
 
         $teste2tmp = DB::select("select res.user_id,us.name ,SUM(case when result=1 then 1 else 0 end) as totalacerto,COUNT(*) AS totalapos,ROUND((SUM(case when result=1 then 1 else 0 END) /COUNT(*))*100,2) AS media FROM resutladosestatisticas res JOIN users us ON us.id = res.user_id WHERE YEAR(res.created_at)='".$ano."'and MONTH(res.created_at)>='".$mes."' and DAY(res.created_at)>=1 GROUP BY res.user_id,us.name ORDER BY SUM(case when result=1 then 1 else 0 END) desc,  ROUND((SUM(case when result=1 then 1 else 0 END) /COUNT(*))*100,2) desc");

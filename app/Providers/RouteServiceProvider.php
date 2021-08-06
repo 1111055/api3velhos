@@ -72,6 +72,8 @@ class RouteServiceProvider extends ServiceProvider
              Route::apiResource('/articles','ArticleController');
              Route::apiResource('/getall','ClassificacoesController');
              Route::apiResource('/jogo','JogoController');
+             Route::apiResource('/aposta','ApostaController');
+
         });
     }
 }

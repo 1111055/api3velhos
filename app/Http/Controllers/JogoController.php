@@ -237,113 +237,88 @@ class JogoController extends Controller
 
     public function closebet()
     {
+         
          $id = request()->jogoid;
          $resultado = request()->resultado;
        
          $bet = Jogo::find($id);
 
+             if($bet->situacao == 0){
+                     $exist = Aposta::where('jogo_id', '=', $id)->get();
 
- if($bet->situacao == 0){
-         $exist = Aposta::where('jogo_id', '=', $id)->get();
+                     if($resultado != 3 && $resultado != "Cancelado"){
 
-         if($resultado != 3 && $resultado != "Cancelado"){
+                         $bet->situacao = 1;
+                         $bet->resultado = $resultado;
 
-             $bet->situacao = 1;
-             $bet->resultado = $resultado;
+                         foreach ($exist as $key => $value) {
 
-             foreach ($exist as $key => $value) {
+                            if($value->aposta ==  $resultado){
 
-                if($value->aposta ==  $resultado){
+                                $class = Classificacao::where('user_id', '=', $value->user_id)->first();
+                                $class->pontos += 1;
+                                $class->save();
+                            }
 
-                    $class = Classificacao::where('user_id', '=', $value->user_id)->first();
-                    $class->pontos += 1;
-                    $class->save();
-                }
+                         }
+                     }else{
+                    
+                         $bet->situacao = 2;
+                         $bet->resultado = 3;
+                         $bet->cancelado = 1;
+                     }
 
-             }
-         }else{
-        
-             $bet->situacao = 2;
-             $bet->resultado = 3;
-             $bet->cancelado = 1;
-         }
-
-         $bet->save();
-       
-       $now = Carbon::now();
-      // $mes = $now->month;
-         $mes = 7;
-         $ano = $now->year;
-
-
-
-         $vit = $bet->resultado == "1" ? "Jogo: ".$bet->eq1." x ".$bet->eq2." vitória do ".$bet->eq1 : "vitória do ".$bet->eq2;
-
-         if($bet->resultado == "x"){
-                 $vit = "O jogo ".$bet->eq1." x ".$bet->eq2." acabou empatado.";
-         }
-          $users_tmp = User::where('activo', '=','1')->pluck('ID')->all();
-          $class = Classificacao::whereIn('user_id', $users_tmp)->orderBy('pontos','desc')->get();
-
-          $totalap = Aposta::where('aposta', '=', $bet->resultado)->where('jogo_id', '=', $id)->get();
-
-          $html = count($totalap)." Pessoas acertaram no jogo ". $bet->eq1." x ".$bet->eq2." neste resultado.<br/><br/>";
-
-          
-          $html2 = "Tabela Classificativa<br/>";
-
-          $html1 =   "<table class='table'>
-                      <tbody>";
-                foreach ($class as $key => $value) {
-
-
-                     // $teste = DB::table('resutladosestatisticas')->whereMonth('created_at', '=', $mes)->where('user_id','=', $value->utilizador[0]->id)->count();
-                     // $teste2 = DB::table('resutladosestatisticas')->where('result', '=', 1)->whereMonth('created_at', '=', $mes)->where('user_id','=', $value->utilizador[0]->id)->count();
-
-
-                      $teste = DB::table('resutladosestatisticas')->whereMonth('created_at', '>=', $mes)->whereYear('created_at', '>=', $ano)->where('user_id','=', $value->utilizador[0]->id)->count();
-                      $teste2 = DB::table('resutladosestatisticas')->where('result', '=', 1)->whereMonth('created_at', '>=', $mes)->whereYear('created_at', '>=', $ano)->where('user_id','=', $value->utilizador[0]->id)->count();
-
+                     $bet->save();
                    
-
-
-                      if($teste > 0){
-                          $perc = ($teste2 * 100) / $teste;
-                      }
-                      else{
-                           $perc = 0;
-                      }
-
-                     $teste_tmp2 = $teste2."/".$teste." (".(int)$perc."%)";
+                   $now = Carbon::now();
+                  // $mes = $now->month;
+                     $mes = 8;
+                     $ano = 2021;
 
 
 
-                       $html1 =  $html1."<tr>
-                                  <td>".$value->utilizador[0]->name."</td><td>".   $teste_tmp2."</td>
-                                </tr>";
-                }
-                       
-            $html1 = $html1."</tbody></table>";
+                     $vit = $bet->resultado == "1" ? "Jogo: ".$bet->eq1." x ".$bet->eq2." vitória do ".$bet->eq1 : "vitória do ".$bet->eq2;
 
-            $html =  $html.$html2.$html1;
+                     if($bet->resultado == "x"){
+                             $vit = "O jogo ".$bet->eq1." x ".$bet->eq2." acabou empatado.";
+                     }
+                      $users_tmp = User::where('activo', '=','1')->pluck('ID')->all();
+                      
+                    $teste2tmp = DB::select("select res.user_id,us.name ,SUM(case when result=1 then 1 else 0 end) as totalacerto,COUNT(*) AS totalapos,ROUND((SUM(case when result=1 then 1 else 0 END) /COUNT(*))*100,2) AS media FROM resutladosestatisticas res JOIN users us ON us.id = res.user_id WHERE YEAR(res.created_at)='".$ano."'and MONTH(res.created_at)>='".$mes."' and DAY(res.created_at)>=1 GROUP BY res.user_id,us.name ORDER BY SUM(case when result=1 then 1 else 0 END) desc,  ROUND((SUM(case when result=1 then 1 else 0 END) /COUNT(*))*100,2) desc");
 
-            if($bet->cancelado == 1){$html = $bet->eq1." x ".$bet->eq2.". Este jogo foi cancelado!"; $vit = "Cancelado";}
+                      $totalap = Aposta::where('aposta', '=', $bet->resultado)->where('jogo_id', '=', $id)->get();
 
-           Article::create([
-                'title'    => "Jogo Fechado, ". $vit,
-                'body'     => $html, 
-                'activo'   => 1,
-                'fonte'    => " 3 Velhos."
-                
-            ]); 
+                      $html = count($totalap)." Pessoas acertaram no jogo ". $bet->eq1." x ".$bet->eq2." neste resultado.<br/><br/>";
+
+                      
+                      $html2 = "Tabela Classificativa<br/>";
+
+                      $html1 =  '';
+                        $count = 1;
+                        foreach ($teste2tmp as $key => $value) {
+                               $html1 =  $html1.$count." - <span>".$value->name."           ".$value->totalacerto."/".$value->totalapos." | ".$value->media." % </span></br>";
+                        }
+                                   
+
+                        $html =  $html.$html2.$html1;
+
+                        if($bet->cancelado == 1){$html = $bet->eq1." x ".$bet->eq2.". Este jogo foi cancelado!"; $vit = "Cancelado";}
+
+                       Article::create([
+                            'title'    => "Jogo Fechado, ". $vit,
+                            'body'     => $html, 
+                            'activo'   => 1,
+                            'fonte'    => " 3 Velhos."
+                            
+                        ]); 
 
 
 
 
-         return response()->json(0);
-     }else{
-          return response()->json(1);
-     }
+                     return response()->json(0);
+                 }else{
+                      return response()->json(1);
+                 }
     }
 
     public function newgame(Request $request)

@@ -4,7 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\JogoController;
 use App\Http\Controllers\ClassificacoesController;
+use App\Http\Controllers\ApostaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +24,9 @@ Route::post('/login', [AuthController::class,'login']);
 Route::get('/classificacao/getall', [ClassificacoesController::class,'getall']); 
 Route::get('/articles', [ArticleController::class,'index']);
 Route::get('/listarticles', [ArticleController::class,'getArticles']);
+Route::get('/jogo', [JogoController::class,'index']); 
+Route::post('/aposta', [ApostaController::class,'store']);
+
 
 Route::group(['middleware' => ['auth:sanctum']], function(){
 
